@@ -11,9 +11,10 @@ function UserPage() {
       {/* Commented out ID so that only can be see internally */}
       {/* <p>Your ID is: {user.id}</p> */}
       {/* Added name, email, and phone to personal UserPage. */}
-      <p>{user.name}</p>
-      <p>{user.email}</p>
-      <p>{user.phone}</p>
+      <h4>Personal Information</h4>
+      <p>Name: {user.name}</p>
+      <p>Email: {user.email}</p>
+      <p>Phone: {user.phone}</p>
       <LogOutButton className="btn" />
     </div>
   );
