@@ -20,11 +20,16 @@ router.get('/', rejectUnauthenticated, (req, res) => {
 router.post('/register', (req, res, next) => {
   const username = req.body.username;
   const password = encryptLib.encryptPassword(req.body.password);
+  // Added name, email, and phone to be added as one of the field when signing/registering for an account.
+  const name = req.body.name;
+  const email = req.body.email;
+  const phone = req.body.phone;
 
-  const queryText = `INSERT INTO "user" (username, password)
-    VALUES ($1, $2) RETURNING id`;
+  // Added value query $3-$5; representing name, email, and phone.
+  const queryText = `INSERT INTO "user" (username, password, name, email, phone)
+    VALUES ($1, $2, $3, $4, $5) RETURNING id`;
   pool
-    .query(queryText, [username, password])
+    .query(queryText, [username, password, name, email, phone])
     .then(() => res.sendStatus(201))
     .catch((err) => {
       console.log('User registration failed: ', err);
@@ -44,9 +49,28 @@ router.post('/login', userStrategy.authenticate('local'), (req, res) => {
 router.post('/logout', (req, res, next) => {
   // Use passport's built-in method to log out the user
   req.logout((err) => {
-    if (err) { return next(err); }
+    if (err) {
+      return next(err);
+    }
     res.sendStatus(200);
   });
+
+  // PUT request to update user information letter
+  const id = req.params.id;
+  const { name, email, phone } = req.body;
+  console.log(req.body);
+
+  const sqlText = `UPDATE "user" SET "name" = $2, "email" = $3, "phone" = $4 WHERE "id" = $1;`;
+  pool
+    .query(sqlText, [id, name, email, phone])
+    .then((dbResponse) => {
+      console.log('Database response update', dbResponse);
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      console.log('User information update failed', err);
+      res.sendStatus(500);
+    });
 });
 
 module.exports = router;
